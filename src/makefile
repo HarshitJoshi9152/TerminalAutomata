@@ -3,15 +3,16 @@ CFLAGS=-Wall -g
 O_DIR=../build
 
 
-_OBJ = main.o term.o
+SRC = main.c term.c
+_OBJ = $(SRC:.c=.o)
 OBJ = $(patsubst %,$(O_DIR)/%,$(_OBJ))
 
 
 auto: $(OBJ)
-	$(CC) $(CFLAGS) -o $(O_DIR)/auto
+	$(CC) $(CFLAGS) -o $(O_DIR)/auto $(OBJ)
 
 # convert all .c to .o in build dir
-$(O_DIR)/%.o: %.c %.h
+$(O_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $(O_DIR)/$@ $<
 
 clean:
