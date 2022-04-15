@@ -9,6 +9,7 @@ typedef struct term_res_s {
 
 typedef struct buffer_s {
 	char *data;
+	char *prev_data;
 	term_res_t size;
 } buffer_t;
 
@@ -17,3 +18,7 @@ buffer_t get_term_buffer(term_res_t res);
 void free_term_buffer(buffer_t buffer);
 
 void render_term_buffer(buffer_t buffer);
+void render_term_buffer_FORCE(buffer_t buffer);
+void set_cursor(u32 row, u32 col);
+
+void random_buffers_mut(buffer_t buffer);

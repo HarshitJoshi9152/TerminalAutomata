@@ -3,21 +3,72 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdbool.h>
 
 #include "types.h"
 #include "term.h"
 
+
+#define MEMSAFE 1
+#define DELTA_TIME 1
+
+// to be freed if we have any error so it needs to be a global
+buffer_t screen_buf = {0};
+bool rendering = true;
+extern u32 mismatch_count;
+
+// cleanup function
+void cleanup(void) {
+	free_term_buffer(screen_buf);
+	// set_cursor(screen_buf.size.rows, screen_buf.size.cols);
+	set_cursor(screen_buf.size.rows, 0);
+	printf("times updared : %d\n", mismatch_count);
+}
+
+void sig_handler(int signo)
+{
+  if (signo == SIGINT) {
+		rendering = false;
+	}
+}
+
 int main(int argc, char **argv)
 {
+	atexit(&cleanup); // wtf
 	system("clear");
 	term_res_t term_res = get_resolution();
-	// printf("cols: %d\n", term_res.cols);
-	// printf("rows: %d\n", term_res.rows);
+	screen_buf = get_term_buffer(term_res);
 
-	buffer_t screen_buf = get_term_buffer(term_res);
-	render_term_buffer(screen_buf);
+	if (signal(SIGINT, sig_handler) == SIG_ERR)
+	{
+		fprintf(stderr, "could not attach signal_handler %m");
+#ifdef MEMSAFE
+		exit(1);
+#endif
+	}
 
-	free_term_buffer(screen_buf);
+	// main game loop
+	u64 frame_count = 0;
+	while (rendering)
+	{
+		// manually change the buffer value to SOME STRING to inspect the issue
+		render_term_buffer(screen_buf);
+		// render_term_buffer_FORCE(screen_buf); // hmm just using this wont work we have to measure the time between each frame or fps
+
+		random_buffers_mut(screen_buf);
+
+		sleep(DELTA_TIME);
+		// if (frame_count++ == 1) {
+		// 	render_term_buffer_FORCE(screen_buf);
+		// }
+	}
+
+	// free_term_buffer(screen_buf);
+	printf("\n\n");
+	printf("frame_count : %lu\n", frame_count);
 
 	return EXIT_SUCCESS;
 }
+// signal, sigaction
