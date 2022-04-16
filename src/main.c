@@ -12,7 +12,7 @@
 
 
 #define MEMSAFE 1
-#define DELTA_TIME 1
+#define DELTA_TIME 100
 
 // to be freed if we have any error so it needs to be a global
 buffer_t screen_buf = {0};
@@ -24,7 +24,6 @@ void cleanup(void) {
 	free_term_buffer(screen_buf);
 	// set_cursor(screen_buf.size.rows, screen_buf.size.cols);
 	set_cursor(screen_buf.size.rows, 0);
-	printf("times updared : %d\n", mismatch_count);
 }
 
 void sig_handler(int signo)
@@ -36,11 +35,13 @@ void sig_handler(int signo)
 
 int main(int argc, char **argv)
 {
-	atexit(&cleanup); // wtf
+	atexit(&cleanup); // wtf, was this error
 	system("clear");
+
 	term_res_t term_res = get_resolution();
 	screen_buf = get_term_buffer(term_res);
 
+	// ctrl+c sets rendering to false
 	if (signal(SIGINT, sig_handler) == SIG_ERR)
 	{
 		fprintf(stderr, "could not attach signal_handler %m");
@@ -59,10 +60,10 @@ int main(int argc, char **argv)
 
 		random_buffers_mut(screen_buf);
 
-		sleep(DELTA_TIME);
-		// if (frame_count++ == 1) {
-		// 	render_term_buffer_FORCE(screen_buf);
-		// }
+
+		frame_count++;
+		// if (frame_count > 0) rendering = false;
+		usleep(DELTA_TIME * 1000); // usleep takes microseconds. 1000micros = 1millis
 	}
 
 	// free_term_buffer(screen_buf);
