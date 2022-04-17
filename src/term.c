@@ -51,17 +51,14 @@ buffer_t get_term_buffer(term_res_t res)
 		.prev_data = malloc(size),
 		.size = res
 	};
-	// printf("size :%ld\n", size);
-
-	// memset(buffer.data, 65, size);
-
-	// 10 Print
+	
+	// 10 Print pattern
 	for (int r = 0; r < res.rows; ++r) {
 		for (int c = 0; c < res.cols; ++c) {
 			u32 offset = r * res.cols + c;
-			// printf("offset: %d\n", offset);
-			buffer.data[offset] = (offset % 2 == 0) ? L'/' : L'\\';
-			buffer.prev_data[offset] = (offset % 2 == 0) ? L'/' : L'\\';   // if we use this line first render will be blank!
+			buffer.data[offset] = L' ';
+			// buffer.data[offset] = (offset % 2 == 0) ? L'/' : L'\\';
+			// buffer.prev_data[offset] = (offset % 2 == 0) ? L'/' : L'\\';   // if we use this line first render will be blank!
 		}
 	}
 
@@ -165,7 +162,7 @@ void random_buffers_mut(buffer_t buffer)
 	for (u32 r = 0; r < rows; ++r) {
 		for (u32 c = 0; c < cols; ++c) {
 			u32 offset = r * cols + c;
-			if (rand() % 100 < 10)
+			if (rand() % 100 < 4)
 			{
 				// data[offset] = Elements[rand() % (sizeof(Elements)/sizeof(Elements[0]))];
 				// data[offset] = '█';
@@ -174,3 +171,4 @@ void random_buffers_mut(buffer_t buffer)
 		}
 	}
 }
+// todo use only 1,0 for the buffer values !!

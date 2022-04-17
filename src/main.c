@@ -11,6 +11,7 @@
 
 #include "types.h"
 #include "term.h"
+#include "draw.h"
 
 
 #define MEMSAFE 1
@@ -25,7 +26,8 @@ extern u32 mismatch_count;
 void cleanup(void) {
 	free_term_buffer(screen_buf);
 	// set_cursor(screen_buf.size.rows, screen_buf.size.cols);
-	system("tput cnorm"); // makes the cursor disappear
+	system("tput cnorm"); // makes the cursor reappear
+	// system("tput rmcup");	// restore the screen
 }
 
 void sig_handler(int signo)
@@ -39,7 +41,8 @@ int main(int argc, char **argv)
 {
 	atexit(&cleanup); // wtf, was this error
 	system("tput civis"); // makes the cursor disappear
-	system("clear");
+	// system("tput smcup");			// save the screen
+	system("clear");				// todo instead of clearing do tput smcup;
 	setlocale(LC_CTYPE, "");
 
 	term_res_t term_res = get_resolution();
@@ -58,18 +61,18 @@ int main(int argc, char **argv)
 	u64 frame_count = 0;
 	while (rendering)
 	{
+		// update loop
+		update_game(screen_buf);
+
 		// manually change the buffer value to SOME STRING to inspect the issue
-		render_term_buffer(screen_buf);
-		// render_term_buffer_FORCE(screen_buf); // hmm just using this wont work we have to measure the time between each frame or fps
+		// render_term_buffer(screen_buf);
+		render_term_buffer_FORCE(screen_buf); // hmm just using this wont work we have to measure the time between each frame or fps
 		// there is some error in render_term_buffer_FORCE too it is making the screen switch downwards by a lot !
-		
-		random_buffers_mut(screen_buf);
-
-		
-
 
 		frame_count++;
-		// if (frame_count > 0) rendering = false;
+		if (frame_count == 2) {
+			random_buffers_mut(screen_buf);
+		}
 		usleep(DELTA_TIME * 1000); // usleep takes microseconds. 1000micros = 1millis
 	}
 

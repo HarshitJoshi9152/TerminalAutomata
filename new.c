@@ -7,7 +7,16 @@ int main() {
     wprintf(L"%zu\n", sizeof(long));
     wprintf(L"%zu\n", sizeof(wchar_t));
     wprintf(L"\x1b[91mHarhsit\n");
-	wprintf(L"\x1b[%d;%dH", (uint32_t)10,(uint32_t)10);
+	// wprintf(L"\x1b[%d;%dH", (uint32_t)10,(uint32_t)10);
+
+    wchar_t *array = malloc(sizeof(wchar_t) * 10);
+    memcpy(array, (wchar_t[]){L'█', L'█',L'█',L'█',L'█',L'█',L'█',L'█',L'█', L'█'}, sizeof(wchar_t) * 10);
+
+    array[2] = L'█';
+
+    for (int i = 0; i < 10; i++) {
+        wprintf(L"%lc", array[i]);
+    }
 }
 
 // learn about
