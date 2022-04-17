@@ -3,7 +3,7 @@ CFLAGS=-Wall -g
 O_DIR=../build
 
 
-SRC = main.c term.c
+SRC = main.c term.c draw.c
 _OBJ = $(SRC:.c=.o)
 OBJ = $(patsubst %,$(O_DIR)/%,$(_OBJ))
 

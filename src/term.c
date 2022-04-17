@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <wchar.h>
 
 #include "types.h"
 #include "term.h"
+#include "draw.h"
 
 #define COLS_CMD "tput cols"
 #define ROWS_CMD "tput lines"
@@ -42,11 +44,11 @@ term_res_t get_resolution()
 
 buffer_t get_term_buffer(term_res_t res)
 {
-	u64 size = res.cols * res.rows;
+	u64 size = res.cols * res.rows  * sizeof(wchar_t);
 
 	buffer_t buffer = {
-		.data = (char*)malloc(size),
-		.prev_data = (char*)malloc(size),
+		.data = malloc(size),
+		.prev_data = malloc(size),
 		.size = res
 	};
 	// printf("size :%ld\n", size);
@@ -58,12 +60,12 @@ buffer_t get_term_buffer(term_res_t res)
 		for (int c = 0; c < res.cols; ++c) {
 			u32 offset = r * res.cols + c;
 			// printf("offset: %d\n", offset);
-			buffer.data[offset] = (offset % 2 == 0) ? '/' : '\\';
-			buffer.prev_data[offset] = (offset % 2 == 0) ? '/' : '\\';   // if we use this line first render will be blank!
+			buffer.data[offset] = (offset % 2 == 0) ? L'/' : L'\\';
+			buffer.prev_data[offset] = (offset % 2 == 0) ? L'/' : L'\\';   // if we use this line first render will be blank!
 		}
 	}
 
-	// memset(buffer.prev_data, 0, size); // if we use this line first render will not be blank!
+	memset(buffer.prev_data, 0, size); // if we use this line first render will not be blank!
 	
 	return buffer;
 }
@@ -75,22 +77,22 @@ void free_term_buffer(buffer_t buffer) {
 
 // inline works differently in c and cpp
 void set_cursor(u32 row, u32 col) {
-	printf("\x1b[%d;%dH", row, col);
+	wprintf(L"\x1b[%d;%dH", row, col);
 }
 
 
 void render_term_buffer_FORCE(buffer_t buffer) {
 
-	printf("\x1b[1;1H"); // resetting the cursor position on each render
+	wprintf(L"\x1b[1;1H"); // resetting the cursor position on each render
 
 	u32 rows = buffer.size.rows;
 	u32 cols = buffer.size.cols;
-	char* data = buffer.data;
+	wchar_t* data = buffer.data;
 
 	for (u32 r = 0; r < rows; ++r) {
 		for (u32 c = 0; c < cols; ++c) {
 			u32 offset = r * cols + c;
-			printf("%c", data[offset]);
+			wprintf(L"%lc", data[offset]);
 		}
 	}
 }
@@ -99,12 +101,12 @@ void render_term_buffer_FORCE(buffer_t buffer) {
 // todo minimise the no of printf calls
 void render_term_buffer(buffer_t buffer)
 {
-	printf("\x1b[1;1H"); // resetting the cursor position on each render
+	wprintf(L"\x1b[1;1H"); // resetting the cursor position on each render
 
 	u32 rows = buffer.size.rows;
 	u32 cols = buffer.size.cols;
-	char* data = buffer.data;
-	char* prev_data = buffer.prev_data;
+	wchar_t* data = buffer.data;
+	wchar_t* prev_data = buffer.prev_data;
 
 	bool is_data_same = true;
 
@@ -123,7 +125,17 @@ void render_term_buffer(buffer_t buffer)
 				}
 
 				// actually rendering
-				printf("%c", data[offset]);
+				// printf("%c", data[offset]);
+				wprintf(L"%lc", data[offset]);			// this doent work 
+				// wprintf(L"%lc", L'█');						// it should work like this
+
+				// if (data[offset] == ' ') {
+				// 	printf("\x1b[7m");
+				// 	printf("%c", data[offset]);
+				// 	printf("\x1b[0m");
+				// } else {
+				// 	printf("%c", data[offset]);
+				// }
 
 
 				// if (is_data_same) is_data_same = false;
@@ -140,13 +152,13 @@ void render_term_buffer(buffer_t buffer)
 	}
 }
 
-char Elements[] = {65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75};
+wchar_t Elements[] = {65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75};
 
 void random_buffers_mut(buffer_t buffer)
 {	
 	u32 rows = buffer.size.rows;
 	u32 cols = buffer.size.cols;
-	char* data = buffer.data;
+	wchar_t* data = buffer.data;
 	// char* prev_data = buffer.prev_data;
 
 	// r=0; coz rows * cols + c would overflow ! (size is rows * cols)
@@ -155,10 +167,10 @@ void random_buffers_mut(buffer_t buffer)
 			u32 offset = r * cols + c;
 			if (rand() % 100 < 10)
 			{
-				data[offset] = Elements[rand() % (sizeof(Elements)/sizeof(Elements[0]))];
+				// data[offset] = Elements[rand() % (sizeof(Elements)/sizeof(Elements[0]))];
+				// data[offset] = '█';
+				fillBlock(r, c);
 			}
 		}
 	}
 }
-
-// tput civis

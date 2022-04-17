@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <locale.h>
+#include <wchar.h>
 
 #include "types.h"
 #include "term.h"
@@ -23,7 +25,7 @@ extern u32 mismatch_count;
 void cleanup(void) {
 	free_term_buffer(screen_buf);
 	// set_cursor(screen_buf.size.rows, screen_buf.size.cols);
-	set_cursor(screen_buf.size.rows, 0);
+	system("tput cnorm"); // makes the cursor disappear
 }
 
 void sig_handler(int signo)
@@ -36,7 +38,9 @@ void sig_handler(int signo)
 int main(int argc, char **argv)
 {
 	atexit(&cleanup); // wtf, was this error
+	system("tput civis"); // makes the cursor disappear
 	system("clear");
+	setlocale(LC_CTYPE, "");
 
 	term_res_t term_res = get_resolution();
 	screen_buf = get_term_buffer(term_res);
@@ -57,8 +61,11 @@ int main(int argc, char **argv)
 		// manually change the buffer value to SOME STRING to inspect the issue
 		render_term_buffer(screen_buf);
 		// render_term_buffer_FORCE(screen_buf); // hmm just using this wont work we have to measure the time between each frame or fps
-
+		// there is some error in render_term_buffer_FORCE too it is making the screen switch downwards by a lot !
+		
 		random_buffers_mut(screen_buf);
+
+		
 
 
 		frame_count++;
@@ -67,9 +74,14 @@ int main(int argc, char **argv)
 	}
 
 	// free_term_buffer(screen_buf);
-	printf("\n\n");
-	printf("frame_count : %lu\n", frame_count);
+	set_cursor(screen_buf.size.rows, 0);
+	wprintf(L"\n\n");
+	wprintf(L"frame_count : %lu\n", frame_count);
 
 	return EXIT_SUCCESS;
 }
 // signal, sigaction
+
+// from: https://www.linuxcommand.org/lc3_adv_tput.php
+// # Save screen contents and make cursor invisible
+// tput smcup; tput civis

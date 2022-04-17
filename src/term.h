@@ -1,15 +1,16 @@
 #pragma once
 
-#include "types.h"
+#include <wchar.h>
 
+#include "types.h"
 typedef struct term_res_s {
 	u32 cols;
 	u32 rows;
 } term_res_t;
 
 typedef struct buffer_s {
-	char *data;
-	char *prev_data;
+	wchar_t *data;
+	wchar_t *prev_data;
 	term_res_t size;
 } buffer_t;
 
