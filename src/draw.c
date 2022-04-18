@@ -18,6 +18,13 @@ void fillBlock(u32 row, u32 col)
 	screen_buf.data[index] = BLOCKCHAR;
 }
 
+wchar_t* data_copy;
+
+void game_init(u32 rows, u32 cols) {
+	data_copy = malloc(rows * cols * sizeof(wchar_t));
+}
+void game_end() {free(data_copy);}
+
 
 void update_game(buffer_t buffer)
 {
@@ -25,7 +32,7 @@ void update_game(buffer_t buffer)
 	u32 cols = buffer.size.cols;
 	wchar_t* data = buffer.data;
 	// using a new buffer coz over writting in real time will make further computation unreliable.
-	wchar_t* data_copy = malloc(rows * cols * sizeof(wchar_t));
+
 
 	for (u32 r = 0; r < rows; ++r)
 	{
@@ -51,8 +58,13 @@ void update_game(buffer_t buffer)
 				// checking for invalid row, col and offset outside the data indexes
 				u32 row = neighbors_offsets[i][0];
 				if (row > rows || row < 0) continue;
+				// if (row > rows) row = 0;
+				// if (row < 0) row = rows;
+
 				u32 col = neighbors_offsets[i][1];
 				if (col > cols || col < 0) continue;
+				// if (col > cols) col = 0;
+				// if (col < 0) col = cols;
 
 				u32 off = row * cols + col;
 				if (off > ((rows * cols) - 1) || off < 0)
@@ -94,7 +106,6 @@ void update_game(buffer_t buffer)
 	}
 
 	memcpy(data, data_copy, rows * cols * sizeof(wchar_t));
-	free(data_copy);
 }
 
 void makePlane(u32 r, u32 c)

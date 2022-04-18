@@ -60,6 +60,8 @@ int main(int argc, char **argv)
 	// setting up ground before running
 	makePlane(4, 4);
 
+	game_init(screen_buf.size.rows, screen_buf.size.cols);
+
 	// main game loop
 	u64 frame_count = 0;
 	while (rendering)
@@ -80,6 +82,8 @@ int main(int argc, char **argv)
 		frame_count++;
 		usleep(DELTA_TIME * 1000); // usleep takes microseconds. 1000micros = 1millis
 	}
+
+	game_end();
 
 	// render_term_buffer_FORCE(screen_buf);
 	// update_game(screen_buf);
