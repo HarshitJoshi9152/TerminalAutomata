@@ -57,32 +57,55 @@ int main(int argc, char **argv)
 #endif
 	}
 
+	// setting up ground before running
+	makePlane(4, 4);
+
 	// main game loop
 	u64 frame_count = 0;
 	while (rendering)
 	{
-		// update loop
-		update_game(screen_buf);
 
 		// manually change the buffer value to SOME STRING to inspect the issue
 		// render_term_buffer(screen_buf);
 		render_term_buffer_FORCE(screen_buf); // hmm just using this wont work we have to measure the time between each frame or fps
 		// there is some error in render_term_buffer_FORCE too it is making the screen switch downwards by a lot !
 
+		// update loop
+		update_game(screen_buf);
+		
+		// if (frame_count == 1) {
+		// 	rendering = false;
+		// 	// random_buffers_mut(screen_buf);
+		// }
 		frame_count++;
-		if (frame_count == 2) {
-			random_buffers_mut(screen_buf);
-		}
 		usleep(DELTA_TIME * 1000); // usleep takes microseconds. 1000micros = 1millis
 	}
+
+	// render_term_buffer_FORCE(screen_buf);
+	// update_game(screen_buf);
+	// makePlane(10,10);
+	// render_term_buffer_FORCE(screen_buf);
+	// update_game(screen_buf);
+	// render_term_buffer_FORCE(screen_buf);
+	// update_game(screen_buf);
+	// render_term_buffer_FORCE(screen_buf);
 
 	// free_term_buffer(screen_buf);
 	set_cursor(screen_buf.size.rows, 0);
 	wprintf(L"\n\n");
-	wprintf(L"frame_count : %lu\n", frame_count);
+	// wprintf(L"frame_count : %lu\n", frame_count);
 
 	return EXIT_SUCCESS;
 }
+
+
+
+
+
+
+
+
+
 // signal, sigaction
 
 // from: https://www.linuxcommand.org/lc3_adv_tput.php

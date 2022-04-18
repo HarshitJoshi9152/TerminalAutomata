@@ -7,3 +7,4 @@
 
 void fillBlock(u32 row, u32 col);
 void update_game(buffer_t buffer);
+void makePlane(u32 r, u32 c);

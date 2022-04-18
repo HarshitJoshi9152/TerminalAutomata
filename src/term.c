@@ -162,7 +162,7 @@ void random_buffers_mut(buffer_t buffer)
 	for (u32 r = 0; r < rows; ++r) {
 		for (u32 c = 0; c < cols; ++c) {
 			u32 offset = r * cols + c;
-			if (rand() % 100 < 4)
+			if (rand() % 100 > 90)
 			{
 				// data[offset] = Elements[rand() % (sizeof(Elements)/sizeof(Elements[0]))];
 				// data[offset] = '█';
