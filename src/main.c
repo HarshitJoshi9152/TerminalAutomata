@@ -15,12 +15,12 @@
 
 
 #define MEMSAFE 1
-#define DELTA_TIME 100
+#define DELTA_TIME 69
 
 // to be freed if we have any error so it needs to be a global
 buffer_t screen_buf = {0};
 bool rendering = true;
-extern u32 mismatch_count;
+extern i32 mismatch_count;
 
 // cleanup function
 void cleanup(void) {
@@ -52,13 +52,13 @@ int main(int argc, char **argv)
 	if (signal(SIGINT, sig_handler) == SIG_ERR)
 	{
 		fprintf(stderr, "could not attach signal_handler %m");
-#ifdef MEMSAFE
-		exit(1);
-#endif
+		#ifdef MEMSAFE
+			exit(1);
+		#endif
 	}
 
 	// setting up ground before running
-	makePlane(4, 4);
+	makePlane(1, 1);
 
 	game_init(screen_buf.size.rows, screen_buf.size.cols);
 
@@ -74,6 +74,7 @@ int main(int argc, char **argv)
 
 		// update loop
 		update_game(screen_buf);
+		// wprintf(L"COUNT !%ld", frame_count);
 		
 		// if (frame_count == 1) {
 		// 	rendering = false;

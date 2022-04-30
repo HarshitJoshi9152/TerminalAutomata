@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -O3 -fshort-enums
 O_DIR=../build
 
 
@@ -12,8 +12,8 @@ auto: $(OBJ)
 	$(CC) $(CFLAGS) -o $(O_DIR)/auto $(OBJ)
 
 # convert all .c to .o in build dir
-$(O_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) -c -o $(O_DIR)/$@ $<
+$(O_DIR)/%.o: %.c %.h
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm $(O_DIR)/*.o $(O_DIR)/auto

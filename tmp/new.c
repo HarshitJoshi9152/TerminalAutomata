@@ -1,3 +1,5 @@
+#include <string.h>
+#include <stdlib.h>
 #include <wchar.h>
 #include <locale.h>
 #include <stdint.h>
@@ -17,6 +19,15 @@ int main() {
     for (int i = 0; i < 10; i++) {
         wprintf(L"%lc", array[i]);
     }
+
+
+    typedef enum {
+        DEAD,
+        ALIVE
+    } cell_state;
+
+    cell_state h = ALIVE;
+    wprintf(L"\n%zu", sizeof(cell_state));
 }
 
 // learn about

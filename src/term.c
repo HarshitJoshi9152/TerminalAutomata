@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -11,6 +12,11 @@
 #define COLS_CMD "tput cols"
 #define ROWS_CMD "tput lines"
 #define MAX_RES_DIGITS 5
+
+wchar_t PRINT_CHARACTERS[2] = {
+	[ALIVE] = L'█',
+	[DEAD] = L' '
+};
 
 
 term_res_t get_resolution()
@@ -44,7 +50,7 @@ term_res_t get_resolution()
 
 buffer_t get_term_buffer(term_res_t res)
 {
-	u64 size = res.cols * res.rows  * sizeof(wchar_t);
+	u64 size = res.cols * res.rows  * sizeof(cell_state);
 
 	buffer_t buffer = {
 		.data = malloc(size),
@@ -55,8 +61,8 @@ buffer_t get_term_buffer(term_res_t res)
 	// 10 Print pattern
 	for (int r = 0; r < res.rows; ++r) {
 		for (int c = 0; c < res.cols; ++c) {
-			u32 offset = r * res.cols + c;
-			buffer.data[offset] = L' ';
+			i32 offset = r * res.cols + c;
+			buffer.data[offset] = DEADCHAR;
 			// buffer.data[offset] = (offset % 2 == 0) ? L'/' : L'\\';
 			// buffer.prev_data[offset] = (offset % 2 == 0) ? L'/' : L'\\';   // if we use this line first render will be blank!
 		}
@@ -73,7 +79,7 @@ void free_term_buffer(buffer_t buffer) {
 }
 
 // inline works differently in c and cpp
-void set_cursor(u32 row, u32 col) {
+void set_cursor(i32 row, i32 col) {
 	wprintf(L"\x1b[%d;%dH", row, col);
 }
 
@@ -82,36 +88,43 @@ void render_term_buffer_FORCE(buffer_t buffer) {
 
 	wprintf(L"\x1b[1;1H"); // resetting the cursor position on each render
 
-	u32 rows = buffer.size.rows;
-	u32 cols = buffer.size.cols;
-	wchar_t* data = buffer.data;
+	i32 rows = buffer.size.rows;
+	i32 cols = buffer.size.cols;
+	cell_state* data = buffer.data;
 
-	for (u32 r = 0; r < rows; ++r) {
-		for (u32 c = 0; c < cols; ++c) {
-			u32 offset = r * cols + c;
-			wprintf(L"%lc", data[offset]);
+	for (i32 r = 0; r < rows; ++r) {
+		for (i32 c = 0; c < cols; ++c) {
+			i32 offset = r * cols + c;
+			cell_state state = data[offset];
+			wchar_t p_char = PRINT_CHARACTERS[state];
+			wprintf(L"%lc", p_char);
+			// if (data[offset] == ALIVE) {
+			// } else {
+			// 	wprintf(L"%lc", DEADCHAR);
+			// }
 		}
 	}
 }
 
 
-// todo minimise the no of printf calls
+// todo minimise the no of wprintf calls
+// TODO FUX THIS LMAO
 void render_term_buffer(buffer_t buffer)
 {
 	wprintf(L"\x1b[1;1H"); // resetting the cursor position on each render
 
-	u32 rows = buffer.size.rows;
-	u32 cols = buffer.size.cols;
-	wchar_t* data = buffer.data;
-	wchar_t* prev_data = buffer.prev_data;
+	i32 rows = buffer.size.rows;
+	i32 cols = buffer.size.cols;
+	cell_state* data = buffer.data;
+	cell_state* prev_data = buffer.prev_data;
 
 	bool is_data_same = true;
 
 	bool cursor_updated = true;
 
-	for (u32 r = 0; r < rows; ++r) {
-		for (u32 c = 0; c < cols; ++c) {
-			u32 offset = r * cols + c;
+	for (i32 r = 0; r < rows; ++r) {
+		for (i32 c = 0; c < cols; ++c) {
+			i32 offset = r * cols + c;
 			// check if the char is new/unique
 			if (prev_data[offset] != data[offset])
 			{
@@ -123,17 +136,14 @@ void render_term_buffer(buffer_t buffer)
 
 				// actually rendering
 				// printf("%c", data[offset]);
-				wprintf(L"%lc", data[offset]);			// this doent work 
-				// wprintf(L"%lc", L'█');						// it should work like this
-
-				// if (data[offset] == ' ') {
-				// 	printf("\x1b[7m");
-				// 	printf("%c", data[offset]);
-				// 	printf("\x1b[0m");
+				cell_state state = data[offset];
+				wchar_t p_char = PRINT_CHARACTERS[state];
+				wprintf(L"%lc", p_char);
+				// if (data[offset] == ALIVE) {
 				// } else {
-				// 	printf("%c", data[offset]);
+				// 	wprintf(L"%lc", DEADCHAR); 
 				// }
-
+				// wprintf(L"%lc", L'█');						// it should work like this
 
 				// if (is_data_same) is_data_same = false;
 				// copying main buffer's data to prev_buffers
@@ -153,15 +163,15 @@ wchar_t Elements[] = {65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75};
 
 void random_buffers_mut(buffer_t buffer)
 {	
-	u32 rows = buffer.size.rows;
-	u32 cols = buffer.size.cols;
-	wchar_t* data = buffer.data;
+	i32 rows = buffer.size.rows;
+	i32 cols = buffer.size.cols;
+	// cell_state* data = buffer.data;
 	// char* prev_data = buffer.prev_data;
 
 	// r=0; coz rows * cols + c would overflow ! (size is rows * cols)
-	for (u32 r = 0; r < rows; ++r) {
-		for (u32 c = 0; c < cols; ++c) {
-			u32 offset = r * cols + c;
+	for (i32 r = 0; r < rows; ++r) {
+		for (i32 c = 0; c < cols; ++c) {
+			i32 offset = r * cols + c;
 			if (rand() % 100 > 90)
 			{
 				// data[offset] = Elements[rand() % (sizeof(Elements)/sizeof(Elements[0]))];
